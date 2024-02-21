@@ -142,6 +142,18 @@ export const constantRoutes = [
       },
     ],
   },
+  {
+    path: "/requestlog",
+    component: Layout,
+    children: [
+      {
+        path: "requestlog",
+        name: "RequestLog",
+        component: () => import("@/views/requestlog/index"),
+        meta: { title: "推送历史记录", icon: "form" },
+      },
+    ],
+  },
 
   // 404 page must be placed at the end !!!
   { path: "*", redirect: "/404", hidden: true },

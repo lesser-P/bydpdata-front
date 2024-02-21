@@ -1,12 +1,13 @@
 import request from "@/utils/request";
 
-const api_name = "/fncc-log-info";
+const api_name = "/fncc-request-body";
 
 export default {
-  getLogInfo(page) {
+  getRequestBody(data) {
     return request({
-      url: `${api_name}/getLogInfo?page=${page}`,
-      method: "get",
+      url: `${api_name}/getRequestList`,
+      method: "post",
+      data: data,
     });
   },
 };
