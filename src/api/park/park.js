@@ -30,4 +30,30 @@ export default {
       data: data,
     });
   },
+  addTeam(data) {
+    return request({
+      url: `${api_name}/addTeam`,
+      method: "post",
+      data: data,
+    });
+  },
+  getTeamList() {
+    return request({
+      url: `${api_name}/getTeam`,
+      method: "get",
+    });
+  },
+  deleteTeam(id) {
+    return request({
+      url: `${api_name}/deleteTeam?id=${id}`,
+      method: "delete",
+    });
+  },
+  updateTeamInfo(data) {
+    return request({
+      url: `${api_name}/updateTeam`,
+      method: "put",
+      data: data,
+    });
+  },
 };

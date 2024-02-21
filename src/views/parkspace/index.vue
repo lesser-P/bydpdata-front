@@ -26,12 +26,7 @@
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="ID" width="95">
-        <template slot-scope="scope">
-          {{ scope.$index }}
-        </template>
-      </el-table-column>
-      <el-table-column label="空间ID">
+      <el-table-column align="center" label="空间ID">
         <template slot-scope="scope">
           {{ scope.row.parkId }}
         </template>
@@ -72,7 +67,7 @@
       </el-table-column>
       <el-table-column label="是否开放" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.parkOpen }}</span>
+          {{ scope.row.parkOpen === true ? "开放" : "关闭" }}
         </template>
       </el-table-column>
       <el-table-column label="添加时间" align="center">
@@ -87,21 +82,19 @@
       </el-table-column>
       <el-table-column label="操作" width="300" align="center">
         <template slot-scope="scope">
-          <el-popover v-model="visible" style="margin-right: 10px">
-            <p>是否要删除这条数据？</p>
-            <el-button size="mini" type="text" @click="visible = false"
-              >取消</el-button
-            >
+          <el-popconfirm
+            title="确定删除这条数据吗"
+            @onConfirm="deleteParkspace(scope.row.id)"
+          >
             <el-button
-              type="primary"
+              slot="reference"
+              type="danger"
               size="mini"
-              @click="deleteParkSpaceInfo(scope.row.id)"
-              >确定</el-button
-            >
-            <el-button slot="reference" size="mini" type="danger" round
+              round
+              style="margin-right: 10px"
               >删除</el-button
             >
-          </el-popover>
+          </el-popconfirm>
           <el-button
             size="mini"
             type="warning"
@@ -113,7 +106,7 @@
             size="mini"
             type="primary"
             round
-            @click="dialogFormVisibleTeam = true"
+            @click="openAddTeam(scope.row.parkId)"
             >添加团队</el-button
           >
         </template>
@@ -178,7 +171,7 @@
               type="success"
               @click="submitUpload"
               >上传到服务器</el-button
-            >
+            ><br />
           </el-upload>
         </el-form-item>
       </el-form>
@@ -198,11 +191,11 @@
     >
       <el-form :model="team" style="width: ">
         <el-form-item label="团队名称" align="center">
-          <el-input v-model="form.parkId" autocomplete="off"></el-input>
+          <el-input v-model="team.teamName" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="入住日期">
           <el-date-picker
-            v-model="team.settle_date"
+            v-model="team.settleDate"
             type="date"
             placeholder="选择日期"
           >
@@ -217,10 +210,17 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="dialogFormVisibleTeam = false"
+        <el-button
+          size="mini"
+          @click="
+            dialogFormVisibleTeam = false;
+            this.team = {};
+          "
           >取 消</el-button
         >
-        <el-button size="mini" type="primary">确定</el-button>
+        <el-button size="mini" type="primary" @click="addTeam(data)"
+          >确定</el-button
+        >
       </div>
     </el-dialog>
   </div>
@@ -245,7 +245,12 @@ export default {
   },
   data() {
     return {
-      team: {},
+      team: {
+        parkId: "",
+        settleDate: "",
+        settleState: open,
+        teamName: "",
+      },
       open: true,
       fileList: [],
       visible: false,
@@ -269,21 +274,7 @@ export default {
         parkOpen: "",
         settleTeams: "",
       },
-      parkspaceList: [
-        {
-          added: "",
-          areaBuss: "",
-          areaTotal: "",
-          id: "1",
-          parkId: "",
-          parkImg: "",
-          parkName: "",
-          parkNameSub: "",
-          parkOpen: "",
-          settleTeams: "",
-          updated: "",
-        },
-      ],
+      parkspaceList: [],
       parkspace: {
         added: "",
         areaBuss: "",
@@ -303,10 +294,14 @@ export default {
     this.fetchData();
   },
   methods: {
+    openAddTeam(id) {
+      this.dialogFormVisibleTeam = true;
+      this.team.parkId = id;
+    },
+
     cancelBtn() {
       this.dialogFormVisible = false;
-      this.fileList = [];
-      this.thisform;
+      this.form = {};
       this.fetchData;
     },
     handleCurrentChange(val) {
@@ -314,7 +309,7 @@ export default {
       this.fetchData();
     },
     handleSuccess(res, file) {
-      this.form.shopImg = res.data;
+      this.form.parkImg = res.data;
     },
     // 上传图片
     submitUpload() {
@@ -326,63 +321,56 @@ export default {
     handlePreview(file) {
       console.log(file);
     },
-    deleteParkspace(id) {
-      this.visible = false;
-      parkspace.deleteParkSpaceInfo(id).then((resp) => {
-        if (resp.code === 200) {
-          this.$message({
-            message: "删除成功",
-            type: "success",
-          });
-        } else {
-          this.$message({
-            message: "删除失败",
-            type: "error",
-          });
-        }
-      });
-    },
     updateParkspace(data) {
       this.form = data;
       this.dialogFormVisible = true;
     },
-    addParkSpace() {
+    async addParkSpace() {
       // 判断是否有id，有id则修改无则添加
       if (this.form.id === "") {
-        parkspace.addParkSpaceInfo(this.form).then((resp) => {
+        this.form.parkOpen = this.open;
+        this.form.settleTeams = 0;
+        await parkspace.addParkSpaceInfo(this.form).then((resp) => {
+          this.form = {};
           if (resp.code === 200) {
             this.$message({
-              message: "添加店铺信息成功",
+              message: "添加运营空间信息成功",
               type: "success",
             });
-            this.fileList = [];
+            this.form = {};
           }
         });
+        this.dialogFormVisible = false;
+        this.fetchData();
       } else {
-        parkspace.updateParkSpaceInfo(this.form).then((resp) => {
-          if (resp === 200) {
+        await parkspace.updateParkSpaceInfo(this.form).then((resp) => {
+          if (resp.code === 200) {
             this.$message({
-              message: "修改店铺信息成功",
+              message: "修改运营空间信息成功",
               type: "success",
             });
+            this.form = {};
           }
         });
+        this.dialogFormVisible = false;
+        this.fetchData();
       }
     },
-    fetchData() {
-      //   this.listLoading = true;
-      //   console.log(this.pagination);
-      //   parkspace.getParkSpaceInfo(this.pagination).then((resp) => {
-      //     if (resp === 200) {
-      //       this.parkspaceList = resp.data.records;
-      //       this.total = resp.data.total;
-      //     } else {
-      //       this.$message({
-      //         message: "请求失败",
-      //         type: "error",
-      //       });
-      //     }
-      //   });
+    async fetchData() {
+      this.listLoading = true;
+      console.log(this.pagination);
+      await parkspace.getParkSpaceInfo(this.pagination).then((resp) => {
+        if (resp.code === 200) {
+          this.parkspaceList = resp.data.records;
+          this.total = resp.data.total;
+        } else {
+          this.$message({
+            message: "请求失败",
+            type: "error",
+          });
+        }
+      });
+      this.listLoading = false;
     },
   },
 };

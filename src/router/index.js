@@ -130,6 +130,18 @@ export const constantRoutes = [
       },
     ],
   },
+  {
+    path: "/team",
+    component: Layout,
+    children: [
+      {
+        path: "team",
+        name: "Team",
+        component: () => import("@/views/team/index"),
+        meta: { title: "空间团队管理", icon: "form" },
+      },
+    ],
+  },
 
   // 404 page must be placed at the end !!!
   { path: "*", redirect: "/404", hidden: true },

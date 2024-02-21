@@ -28,43 +28,51 @@
           {{ scope.$index }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="D">
+      <el-table-column align="center" label="ID">
         <template slot-scope="scope">
-          {{ scope.row.logistics_id }}
+          {{ scope.row.id }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="物流中心ID">
         <template slot-scope="scope">
-          {{ scope.row.logistics_id }}
+          {{ scope.row.logisticsId }}
         </template>
       </el-table-column>
       <el-table-column label="物流中心名称" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.logistics_name }}</span>
+          <span>{{ scope.row.logisticsName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.added }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="修改时间" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.updated }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="200" align="center">
         <template slot-scope="scope">
-          <el-popover v-model="visible" style="margin-right: 10px">
-            <p>是否要删除这条数据？</p>
-            <el-button size="mini" type="text" @click="visible = false"
-              >取消</el-button
-            >
+          <el-popconfirm
+            title="确定删除这条数据吗"
+            @onConfirm="deletcLogistics(scope.row.id)"
+          >
             <el-button
-              type="primary"
+              slot="reference"
+              type="danger"
               size="mini"
-              @click="deletcLogistics(scope.row.id)"
-              >确定</el-button
-            >
-            <el-button slot="reference" size="mini" type="danger" round
+              round
+              style="margin-right: 10px"
               >删除</el-button
             >
-          </el-popover>
+          </el-popconfirm>
           <el-button
             size="mini"
             type="warning"
             round
-            @click="updateChannel(scope.row)"
+            @click="updateLogistic(scope.row)"
             >修改</el-button
           >
         </template>
@@ -79,10 +87,10 @@
     >
       <el-form :model="form" style="width: ">
         <el-form-item label="物流中心ID">
-          <el-input v-model="form.logistics_id" autocomplete="off"></el-input>
+          <el-input v-model="form.logisticsId" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="物流中心名称">
-          <el-input v-model="form.logistics_name" autocomplete="off"></el-input>
+          <el-input v-model="form.logisticsName" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -122,14 +130,15 @@ export default {
       list: null,
       listLoading: false,
       form: {
-        logistics_id: "",
-        logistics_name: "",
+        id: "",
+        logisticsId: "",
+        logisticsName: "",
       },
       logisticsList: [],
       logistics: {
         added: "",
-        logistics_id: "",
-        logistics_name: "",
+        logisticsId: "",
+        logisticsName: "",
         id: "",
         updated: "",
       },
@@ -154,6 +163,7 @@ export default {
           });
         }
       });
+      this.fetchData();
     },
     updateLogistic(data) {
       this.form = data;

@@ -23,11 +23,6 @@
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="ID" width="95">
-        <template slot-scope="scope">
-          {{ scope.$index }}
-        </template>
-      </el-table-column>
       <el-table-column label="省份ID">
         <template slot-scope="scope">
           {{ scope.row.provinceId }}
@@ -55,21 +50,19 @@
       </el-table-column>
       <el-table-column label="操作" width="200" align="center">
         <template slot-scope="scope">
-          <el-popover v-model="visible" style="margin-right: 10px">
-            <p>是否要删除这条数据？</p>
-            <el-button size="mini" type="text" @click="visible = false"
-              >取消</el-button
-            >
+          <el-popconfirm
+            title="确定删除这条数据吗"
+            @onConfirm="deleteProvince(scope.row.id)"
+          >
             <el-button
-              type="primary"
+              slot="reference"
+              type="danger"
               size="mini"
-              @click="deleteProvince(scope.row.id)"
-              >确定</el-button
-            >
-            <el-button slot="reference" size="mini" type="danger" round
+              round
+              style="margin-right: 10px"
               >删除</el-button
             >
-          </el-popover>
+          </el-popconfirm>
           <el-button
             size="mini"
             type="warning"
@@ -92,7 +85,7 @@
     <!-- 添加店铺 弹窗 -->
     <el-dialog
       width="30%"
-      title="新增省份信息"
+      title="操作省份信息"
       :visible.sync="dialogFormVisible"
     >
       <el-form :model="form" style="width: ">
@@ -162,16 +155,7 @@ export default {
         provinceName: "",
         provinceNameFull: "",
       },
-      provinceList: [
-        {
-          added: "",
-          id: "1",
-          provinceId: "",
-          provinceName: "",
-          provinceNameFull: "",
-          updated: "",
-        },
-      ],
+      provinceList: [],
       province: {
         added: "",
         id: "",
@@ -200,14 +184,15 @@ export default {
     handleRemove(file, fileList) {
       console.log(file, fileList);
     },
-    deleteProvince(id) {
+    async deleteProvince(id) {
       this.visible = false;
-      province.deleteProvinceInfo(id).then((resp) => {
+      await province.deleteProvinceInfo(id).then((resp) => {
         if (resp.code === 200) {
           this.$message({
             message: "删除成功",
             type: "success",
           });
+          this.fetchData();
         } else {
           this.$message({
             message: "删除失败",
@@ -215,6 +200,18 @@ export default {
           });
         }
       });
+    },
+    currentChange(newpahe) {
+      this.pagination.page = newpahe;
+      this.fetchData();
+    },
+    nextPage() {
+      this.pagination.page++;
+      this.fetchData();
+    },
+    prevPage() {
+      this.pagination.page--;
+      this.fetchData();
     },
     updateProvince(data) {
       this.form = data;
@@ -226,37 +223,43 @@ export default {
         province.addProvinceInfo(this.form).then((resp) => {
           if (resp.code === 200) {
             this.$message({
-              message: "添加店铺信息成功",
+              message: "添加省份信息成功",
               type: "success",
             });
-            this.fileList = [];
+            this.dialogFormVisible = false;
+            this.form = {};
+            this.fetchData();
           }
         });
       } else {
         province.updateProvinceInfo(this.form).then((resp) => {
           if (resp === 200) {
             this.$message({
-              message: "修改店铺信息成功",
+              message: "修改省份信息成功",
               type: "success",
             });
           }
+          this.dialogFormVisible = false;
+          this.form = {};
+          this.fetchData();
         });
       }
     },
-    fetchData() {
-      //   this.listLoading = true;
-      //   console.log(this.pagination);
-      //   province.getProvinceInfo(this.pagination).then((resp) => {
-      //     if (resp === 200) {
-      //       this.shopList = resp.data.records;
-      //       this.total = resp.data.total;
-      //     } else {
-      //       this.$message({
-      //         message: "请求失败",
-      //         type: "error",
-      //       });
-      //     }
-      //   });
+    async fetchData() {
+      this.listLoading = true;
+      console.log(this.pagination);
+      await province.getProvinceInfo(this.pagination).then((resp) => {
+        if (resp.code === 200) {
+          this.provinceList = resp.data.records;
+          this.total = resp.data.total;
+        } else {
+          this.$message({
+            message: "请求失败",
+            type: "error",
+          });
+        }
+      });
+      this.listLoading = false;
     },
   },
 };
