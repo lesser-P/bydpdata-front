@@ -23,11 +23,6 @@
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="ID" width="95">
-        <template slot-scope="scope">
-          {{ scope.$index }}
-        </template>
-      </el-table-column>
       <el-table-column label="渠道ID">
         <template slot-scope="scope">
           {{ scope.row.channelId }}
@@ -60,21 +55,19 @@
       </el-table-column>
       <el-table-column label="操作" width="200" align="center">
         <template slot-scope="scope">
-          <el-popover v-model="visible" style="margin-right: 10px">
-            <p>这是一段内容这是一段内容确定删除吗？</p>
-            <el-button size="mini" type="text" @click="visible = false"
-              >取消</el-button
-            >
+          <el-popconfirm
+            title="确定删除这条数据吗"
+            @onConfirm="deletcChannel(scope.row.id)"
+          >
             <el-button
-              type="primary"
+              slot="reference"
+              type="danger"
               size="mini"
-              @click="deletcChannel(scope.row.id)"
-              >确定</el-button
-            >
-            <el-button slot="reference" size="mini" type="danger" round
+              round
+              style="margin-right: 10px"
               >删除</el-button
             >
-          </el-popover>
+          </el-popconfirm>
           <el-button
             size="mini"
             type="warning"
@@ -85,9 +78,23 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination
+      @prev-click="prevPage"
+      @next-click="nextPage"
+      @current-change="currentChange"
+      :current-page.sync="this.pagination.page"
+      :page-size="this.pagination.pageSize"
+      layout="total, prev, pager, next"
+      :total="this.total"
+    >
+    </el-pagination>
 
     <!-- 添加渠道 弹窗 -->
-    <el-dialog width="30%" title="新增渠道" :visible.sync="dialogFormVisible">
+    <el-dialog
+      width="30%"
+      title="操作渠道信息"
+      :visible.sync="dialogFormVisible"
+    >
       <el-form :model="form" style="width: ">
         <el-form-item label="渠道ID">
           <el-input v-model="form.channelId" autocomplete="off"></el-input>
@@ -97,19 +104,32 @@
         </el-form-item>
         <el-form-item label="渠道深度">
           <el-select v-model="form.deep" placeholder="请选择">
-            <el-option :key="0" :label="0" :value="0"> </el-option>
             <el-option :key="1" :label="1" :value="1"> </el-option>
+            <el-option :key="2" :label="2" :value="2"> </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="父渠道ID">
-          <el-select v-model="form.parentId" placeholder="请选择">
+          <el-select
+            v-model="form.parentId"
+            v-if="form.deep == 2"
+            placeholder="请选择"
+            blur=""
+          >
             <el-option :key="10" :label="线下" :value="10"> </el-option>
             <el-option :key="20" :label="线上" :value="20"> </el-option>
+          </el-select>
+          <el-select v-else v-model="form.parentId" placeholder="请选择">
+            <el-option :key="0" :label="0" :value="0"> </el-option>
           </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="dialogFormVisible = false"
+        <el-button
+          size="mini"
+          @click="
+            dialogFormVisible = false;
+            this.form = {};
+          "
           >取 消</el-button
         >
         <el-button size="mini" type="primary" @click="addChannel"
@@ -140,6 +160,10 @@ export default {
   },
   data() {
     return {
+      pagination: {
+        page: 1,
+        pageSize: 10,
+      },
       visible: false,
       dialogFormVisible: false,
       list: null,
@@ -191,6 +215,7 @@ export default {
             type: "error",
           });
         }
+        this.fetchData();
       });
     },
     updateChannel(data) {
@@ -207,6 +232,8 @@ export default {
               type: "success",
             });
           }
+          this.form = {};
+          this.dialogFormVisible = false;
         });
       } else {
         channel.updateChannelinfo(this.form).then((resp) => {
@@ -216,20 +243,36 @@ export default {
               type: "success",
             });
           }
+          this.form = {};
+          this.dialogFormVisible = false;
         });
       }
     },
-    fetchData() {
-      // channel.getChannelList().then((resp) => {
-      //   if (resp === 200) {
-      //     this.channelList = resp.data;
-      //   } else {
-      //     this.$message({
-      //       message: "请求失败",
-      //       type: "error",
-      //     });
-      //   }
-      // });
+    currentChange(newpahe) {
+      this.pagination.page = newpahe;
+      this.fetchData();
+    },
+    nextPage() {
+      this.pagination.page++;
+      this.fetchData();
+    },
+    prevPage() {
+      this.pagination.page--;
+      this.fetchData();
+    },
+    async fetchData() {
+      this.listLoading = true;
+      await channel.getChannelInfo(this.pagination).then((resp) => {
+        if (resp.code === 200) {
+          this.channelList = resp.data.records;
+          this.total = resp.data.total;
+        } else {
+          this.$message({
+            message: "请求失败",
+            type: "error",
+          });
+        }
+      });
       this.listLoading = false;
     },
   },

@@ -47,16 +47,24 @@
         <template slot-scope="scope">
           <el-popover v-model="visible" style="margin-right: 10px">
             <p>是否要删除这条数据？</p>
-            <el-button size="mini" type="text" @click="visible = false"
-              >取消</el-button
-            >
+            <div>
+              <el-button size="mini" type="text" @click="visible = false"
+                >取消</el-button
+              >
+              <el-button
+                type="primary"
+                size="mini"
+                @click="deleteUserById(scope.row.id)"
+                >确定</el-button
+              >
+            </div>
+
             <el-button
-              type="primary"
+              slot="reference"
               size="mini"
-              @click="deleteShop(scope.row.id)"
-              >确定</el-button
-            >
-            <el-button slot="reference" size="mini" type="danger" round
+              type="danger"
+              round
+              @click="deleteUserById(scope.row.id)"
               >删除</el-button
             >
           </el-popover>
@@ -64,8 +72,8 @@
             size="mini"
             type="warning"
             round
-            @click="updateShop(scope.row)"
-            >修改</el-button
+            @click="resetPassword(scope.row.id)"
+            >重置密码</el-button
           >
         </template>
       </el-table-column>
@@ -91,7 +99,6 @@
 </template>
 
 <script>
-import { getList } from "@/api/table";
 import Search from "@/components/Search/index.vue";
 import admin from "@/api/admin/admin";
 
@@ -113,14 +120,7 @@ export default {
     return {
       visible: false,
       dialogFormVisible: false,
-      userList: [
-        {
-          id: "1",
-          username: "admin",
-          added: "2020-12-12",
-          updated: "2020-12-12",
-        },
-      ],
+      userList: [],
       listLoading: false,
       form: {
         id: "",
@@ -138,13 +138,45 @@ export default {
     this.fetchData();
   },
   methods: {
-    fetchData() {},
-    addUser() {
-      admin.addUser(this.user).then((resp) => {
-        // if (resp.code === 200) {
-        //   this.dialogFormVisible = false;
-        // }
-        this.dialogFormVisible = false;
+    async fetchData() {
+      await admin.getUserList().then((resp) => {
+        if (resp.code === 200) {
+          this.userList = resp.data;
+        }
+      });
+    },
+    async addUser(data) {
+      await admin.addUser(data).then((resp) => {
+        if (resp.code === 200) {
+          this.$message({
+            message: "添加成功",
+            type: "success",
+          });
+          this.dialogFormVisible = false;
+          this.fetchData();
+        }
+      });
+    },
+    async deleteUserById(id) {
+      await admin.deleteUserById(id).then((resp) => {
+        if (resp.code === 200) {
+          this.$message({
+            message: "删除成功",
+            type: "success",
+          });
+          this.fetchData();
+        }
+      });
+    },
+    async resetPassword(id) {
+      await admin.resetPassword(id).then((resp) => {
+        if (resp.code === 200) {
+          this.$message({
+            message: "重置成功",
+            type: "success",
+          });
+          this.fetchData();
+        }
       });
     },
   },

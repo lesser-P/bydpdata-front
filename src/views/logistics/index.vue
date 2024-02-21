@@ -28,24 +28,19 @@
           {{ scope.$index }}
         </template>
       </el-table-column>
-      <el-table-column label="物流中心ID">
+      <el-table-column align="center" label="D">
         <template slot-scope="scope">
-          {{ scope.row.logisticsId }}
+          {{ scope.row.logistics_id }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="物流中心ID">
+        <template slot-scope="scope">
+          {{ scope.row.logistics_id }}
         </template>
       </el-table-column>
       <el-table-column label="物流中心名称" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.logisticsName }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="添加时间" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.added }}
-        </template>
-      </el-table-column>
-      <el-table-column label="修改时间" width="110" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.updated }}
+          <span>{{ scope.row.logistics_name }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="200" align="center">
@@ -79,15 +74,15 @@
     <!-- 添加渠道 弹窗 -->
     <el-dialog
       width="30%"
-      title="新增物流中心"
+      title="操作物流中心信息"
       :visible.sync="dialogFormVisible"
     >
       <el-form :model="form" style="width: ">
         <el-form-item label="物流中心ID">
-          <el-input v-model="form.logisticsId" autocomplete="off"></el-input>
+          <el-input v-model="form.logistics_id" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="物流中心名称">
-          <el-input v-model="form.logisticsName" autocomplete="off"></el-input>
+          <el-input v-model="form.logistics_name" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -127,23 +122,14 @@ export default {
       list: null,
       listLoading: false,
       form: {
-        id: "",
-        logisticsId: "",
-        logisticsName: "",
+        logistics_id: "",
+        logistics_name: "",
       },
-      logisticsList: [
-        {
-          added: "",
-          logisticsId: "",
-          logisticsName: "",
-          id: "1",
-          updated: "",
-        },
-      ],
+      logisticsList: [],
       logistics: {
         added: "",
-        logisticsId: "",
-        logisticsName: "",
+        logistics_id: "",
+        logistics_name: "",
         id: "",
         updated: "",
       },
@@ -153,9 +139,9 @@ export default {
     this.fetchData();
   },
   methods: {
-    deletcLogistics(id) {
+    async deletcLogistics(id) {
       this.visible = false;
-      logistics.deleteLogisticsInfo(id).then((resp) => {
+      await logistics.deleteLogisticsInfo(id).then((resp) => {
         if (resp.code === 200) {
           this.$message({
             message: "删除成功",
@@ -173,10 +159,10 @@ export default {
       this.form = data;
       this.dialogFormVisible = true;
     },
-    addLogistic() {
+    async addLogistic() {
       // 判断是否有id，有id则修改无则添加
       if (this.form.id === "") {
-        logistics.addLogisticsInfo(this.form).then((resp) => {
+        await logistics.addLogisticsInfo(this.form).then((resp) => {
           if (resp.code === 200) {
             this.$message({
               message: "添加物流中心信息成功",
@@ -184,8 +170,11 @@ export default {
             });
           }
         });
+        this.form = {};
+        this.dialogFormVisible = false;
+        this.fetchData();
       } else {
-        logistics.updateLogisticsInfo(this.form).then((resp) => {
+        await logistics.updateLogisticsInfo(this.form).then((resp) => {
           if (resp === 200) {
             this.$message({
               message: "修改物流中心信息成功",
@@ -193,20 +182,24 @@ export default {
             });
           }
         });
+        this.form = {};
+        this.dialogFormVisible = false;
+        this.fetchData();
       }
     },
-    fetchData() {
-      // this.listLoading = true;
-      //   logistics.logisticsList().then((resp) => {
-      //     if (resp === 200) {
-      //       this.logisticsList = resp.data;
-      //     } else {
-      //       this.$message({
-      //         message: "请求失败",
-      //         type: "error",
-      //       });
-      //     }
-      //   });
+    async fetchData() {
+      this.listLoading = true;
+      await logistics.logisticsList().then((resp) => {
+        if (resp.code === 200) {
+          this.logisticsList = resp.data;
+        } else {
+          this.$message({
+            message: "请求失败",
+            type: "error",
+          });
+        }
+      });
+      this.listLoading = false;
     },
   },
 };

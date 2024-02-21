@@ -12,7 +12,7 @@ export default {
   },
   deleteChannelInfo(id) {
     return request({
-      url: `${api_name}/deleteChannelinfo?id=${id}`,
+      url: `${api_name}/deleteChannelinfo?channelId=${id}`,
       method: "post",
       data: id,
     });

@@ -23,14 +23,9 @@
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="ID" width="95">
+      <el-table-column align="center" label="店铺ID">
         <template slot-scope="scope">
-          {{ scope.$index }}
-        </template>
-      </el-table-column>
-      <el-table-column label="店铺ID">
-        <template slot-scope="scope">
-          {{ scope.row.logisticsId }}
+          {{ scope.row.id }}
         </template>
       </el-table-column>
       <el-table-column label="店铺名称" align="center">
@@ -40,7 +35,11 @@
       </el-table-column>
       <el-table-column label="店铺图片地址" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.shopImg }}</span>
+          <el-image
+            style="width: 100px; height: 100px"
+            :src="scope.row.shopImg"
+            :fit="fit"
+          ></el-image>
         </template>
       </el-table-column>
       <el-table-column label="店铺品牌ID" align="center">
@@ -63,28 +62,26 @@
           {{ scope.row.added }}
         </template>
       </el-table-column>
-      <el-table-column label="修改时间" width="110" align="center">
+      <el-table-column label="修改时间" align="center">
         <template slot-scope="scope">
           {{ scope.row.updated }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="200" align="center">
+      <el-table-column label="操作" align="center">
         <template slot-scope="scope">
-          <el-popover v-model="visible" style="margin-right: 10px">
-            <p>是否要删除这条数据？</p>
-            <el-button size="mini" type="text" @click="visible = false"
-              >取消</el-button
-            >
+          <el-popconfirm
+            title="确定删除这条数据吗"
+            @onConfirm="deleteShop(scope.row.id)"
+          >
             <el-button
-              type="primary"
+              slot="reference"
+              type="danger"
               size="mini"
-              @click="deleteShop(scope.row.id)"
-              >确定</el-button
-            >
-            <el-button slot="reference" size="mini" type="danger" round
+              round
+              style="margin-right: 10px"
               >删除</el-button
             >
-          </el-popover>
+          </el-popconfirm>
           <el-button
             size="mini"
             type="warning"
@@ -148,8 +145,7 @@
           size="mini"
           @click="
             dialogFormVisible = false;
-            fileList = [];
-            fetchData;
+            form = {};
           "
           >取 消</el-button
         >
@@ -196,15 +192,7 @@ export default {
         shopName: "",
         shopNbr: "",
       },
-      shopList: [
-        {
-          added: "",
-          logisticsId: "",
-          logisticsName: "",
-          id: "1",
-          updated: "",
-        },
-      ],
+      shopList: [],
       shop: {
         added: "",
         brandId: "",
@@ -238,9 +226,8 @@ export default {
     handlePreview(file) {
       console.log(file);
     },
-    deleteShop(id) {
-      this.visible = false;
-      shopinfo.deleteShopInfo(id).then((resp) => {
+    async deleteShop(id) {
+      await shopinfo.deleteShopInfo(id).then((resp) => {
         if (resp.code === 200) {
           this.$message({
             message: "删除成功",
@@ -252,13 +239,14 @@ export default {
             type: "error",
           });
         }
+        this.fetchData();
       });
     },
     updateShop(data) {
       this.form = data;
       this.dialogFormVisible = true;
     },
-    addShop() {
+    async addShop() {
       // 判断是否有id，有id则修改无则添加
       if (this.form.id === "") {
         shopinfo.addShopInfo(this.form).then((resp) => {
@@ -267,11 +255,13 @@ export default {
               message: "添加店铺信息成功",
               type: "success",
             });
-            this.fileList = [];
+            this.dialogFormVisible = false;
+            this.form = {};
+            this.fetchData();
           }
         });
       } else {
-        shopinfo.updateShopInfo(this.form).then((resp) => {
+        await shopinfo.updateShopInfo(this.form).then((resp) => {
           if (resp === 200) {
             this.$message({
               message: "修改店铺信息成功",
@@ -281,20 +271,20 @@ export default {
         });
       }
     },
-    fetchData() {
-      //   this.listLoading = true;
-      //   console.log(this.pagination);
-      //   shopinfo.getShopInfo(this.pagination).then((resp) => {
-      //     if (resp === 200) {
-      //       this.shopList = resp.data.records;
-      //       this.total = resp.data.total;
-      //     } else {
-      //       this.$message({
-      //         message: "请求失败",
-      //         type: "error",
-      //       });
-      //     }
-      //   });
+    async fetchData() {
+      this.listLoading = true;
+      await shopinfo.getShopInfo(this.pagination).then((resp) => {
+        if (resp.code === 200) {
+          this.shopList = resp.data.records;
+          this.total = resp.data.total;
+        } else {
+          this.$message({
+            message: "请求失败",
+            type: "error",
+          });
+        }
+      });
+      this.listLoading = false;
     },
   },
 };

@@ -1,6 +1,5 @@
 module.exports = {
-
-  title: 'Vue Admin Template',
+  title: "博洋数据大屏后台管理",
 
   /**
    * @type {boolean} true | false
@@ -12,5 +11,5 @@ module.exports = {
    * @type {boolean} true | false
    * @description Whether show the logo in sidebar
    */
-  sidebarLogo: false
-}
+  sidebarLogo: false,
+};
