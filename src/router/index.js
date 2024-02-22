@@ -68,7 +68,59 @@ export const constantRoutes = [
       },
     ],
   },
-
+  {
+    path: "/update",
+    component: Layout,
+    redirect: "/update/brandDateSale",
+    name: "Update",
+    meta: { title: "数据管理模块", icon: "el-icon-s-help" },
+    children: [
+      {
+        path: "brandDateSale",
+        name: "BrandDateSale",
+        component: () => import("@/views/updatedata/brandDateSale/index"),
+        meta: { title: "品牌日销售数据" },
+      },
+      {
+        path: "brandDateSaleProvince",
+        name: "BrandDateSaleProvince",
+        component: () =>
+          import("@/views/updatedata/brandDateSaleProvince/index"),
+        meta: { title: "品牌日销售省级数据" },
+      },
+      {
+        path: "brandHourSale",
+        name: "BrandHourSale",
+        component: () => import("@/views/updatedata/brandHourSale/index"),
+        meta: { title: "品牌小时销售数据" },
+      },
+      {
+        path: "brandHourSaleProvince",
+        name: "BrandHourSaleProvince",
+        component: () =>
+          import("@/views/updatedata/brandHourSaleProvince/index"),
+        meta: { title: "品牌小时省份销售数据" },
+      },
+      {
+        path: "goodsDateSale",
+        name: "GoodsDateSale",
+        component: () => import("@/views/updatedata/goodsDateSale/index"),
+        meta: { title: "商品日销售数据" },
+      },
+      {
+        path: "logisticsDateSend",
+        name: "LogisticsDateSend",
+        component: () => import("@/views/updatedata/logisticsDateSend/index"),
+        meta: { title: "物流中心日发货" },
+      },
+      {
+        path: "logisticsHourSend",
+        name: "LogisticsHourSend",
+        component: () => import("@/views/updatedata/logisticsHourSend/index"),
+        meta: { title: "物流中心小时发货" },
+      },
+    ],
+  },
   {
     path: "/brandInfo",
     component: Layout,
@@ -81,6 +133,7 @@ export const constantRoutes = [
       },
     ],
   },
+
   {
     path: "/shopInfo",
     component: Layout,
