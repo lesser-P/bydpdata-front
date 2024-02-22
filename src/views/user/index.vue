@@ -89,7 +89,12 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="dialogFormVisible = false"
+        <el-button
+          size="mini"
+          @click="
+            dialogFormVisible = false;
+            form = {};
+          "
           >取 消</el-button
         >
         <el-button size="mini" type="primary" @click="addUser">确 定</el-button>
@@ -145,13 +150,14 @@ export default {
         }
       });
     },
-    async addUser(data) {
-      await admin.addUser(data).then((resp) => {
+    async addUser() {
+      await admin.addUser(this.form).then((resp) => {
         if (resp.code === 200) {
           this.$message({
             message: "添加成功",
             type: "success",
           });
+          this.form = {};
           this.dialogFormVisible = false;
           this.fetchData();
         }

@@ -70,6 +70,18 @@ export const constantRoutes = [
   },
 
   {
+    path: "/brandInfo",
+    component: Layout,
+    children: [
+      {
+        path: "manager",
+        name: "Shop",
+        component: () => import("@/views/brand/index"),
+        meta: { title: "板块品牌管理", icon: "form" },
+      },
+    ],
+  },
+  {
     path: "/shopInfo",
     component: Layout,
     children: [
