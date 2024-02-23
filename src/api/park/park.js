@@ -43,6 +43,13 @@ export default {
       method: "get",
     });
   },
+  getTeamPage(data) {
+    return request({
+      url: `${api_name}/getTeamByPage`,
+      method: "post",
+      data: data,
+    });
+  },
   deleteTeam(id) {
     return request({
       url: `${api_name}/deleteTeam?id=${id}`,

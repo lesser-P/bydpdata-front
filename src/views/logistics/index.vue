@@ -1,6 +1,32 @@
 <template>
   <div class="app-container">
-    <search></search>
+    <div class="search-div">
+      <el-form label-width="70px" size="small">
+        <el-row>
+          <el-col :span="8">
+            <el-form-item label="关 键 字">
+              <el-input
+                style="width: 95%"
+                v-model="pagination.query"
+                placeholder="物流中心名称"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-button
+              type="primary"
+              icon="el-icon-search"
+              size="mini"
+              @click="fetchData()"
+              >搜索</el-button
+            >
+            <el-button icon="el-icon-refresh" size="mini" @click="resetData"
+              >重置</el-button
+            >
+          </el-col>
+        </el-row>
+      </el-form>
+    </div>
     <div class="tool" style="margin-bottom: 20px">
       <el-form label-width="70px" size="small">
         <el-row>
@@ -78,6 +104,14 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination
+      @current-change="handleCurrentChange"
+      :current-page.sync="this.pagination.page"
+      :page-size="this.pagination.pageSize"
+      layout="total, prev, pager, next"
+      :total="this.total"
+    >
+    </el-pagination>
 
     <!-- 添加渠道 弹窗 -->
     <el-dialog
@@ -106,13 +140,9 @@
 </template>
 
 <script>
-import Search from "@/components/Search/index.vue";
 import logistics from "@/api/logistics/logistics";
 
 export default {
-  components: {
-    Search,
-  },
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -128,7 +158,13 @@ export default {
       visible: false,
       dialogFormVisible: false,
       list: null,
+      total: 100,
       listLoading: false,
+      pagination: {
+        page: "1",
+        pageSize: "10",
+        query: "",
+      },
       form: {
         id: "",
         logisticsId: "",
@@ -148,6 +184,22 @@ export default {
     this.fetchData();
   },
   methods: {
+    handleCurrentChange(val) {
+      this.pagination.page = val;
+      this.fetchData();
+    },
+    resetData() {
+      this.pagination.query = "";
+      this.fetchData();
+    },
+    currentChange(newpage) {
+      this.pagination.page = newpage;
+      this.fetchData();
+    },
+    nextPage() {
+      this.pagination.page++;
+      this.fetchData();
+    },
     async deletcLogistics(id) {
       this.visible = false;
       await logistics.deleteLogisticsInfo(id).then((resp) => {
@@ -199,9 +251,10 @@ export default {
     },
     async fetchData() {
       this.listLoading = true;
-      await logistics.logisticsList().then((resp) => {
+      await logistics.getLogisticsInfo(this.pagination).then((resp) => {
         if (resp.code === 200) {
-          this.logisticsList = resp.data;
+          this.logisticsList = resp.data.records;
+          this.total = resp.data.total;
         } else {
           this.$message({
             message: "请求失败",

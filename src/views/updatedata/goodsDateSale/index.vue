@@ -8,11 +8,11 @@
               <el-input
                 style="width: 95%"
                 v-model="pagination.query"
-                placeholder="板块/品牌 名称"
+                placeholder="商品名称/品牌ID"
               ></el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="4">
             <el-button
               type="primary"
               icon="el-icon-search"
@@ -25,22 +25,23 @@
             >
           </el-col>
         </el-row>
-      </el-form>
-    </div>
-    <div class="tool" style="margin-bottom: 20px">
-      <el-form label-width="70px" size="small">
         <el-row>
-          <el-col :span="8">
-            <el-button size="mini" type="primary" @click="openDia()"
-              >+添加板块品牌信息</el-button
-            >
-          </el-col>
+          <el-form-item label="日期">
+            <el-col :span="10">
+              <el-date-picker
+                v-model="pagination.date"
+                type="date"
+                placeholder="选择日期"
+              >
+              </el-date-picker>
+            </el-col>
+          </el-form-item>
         </el-row>
       </el-form>
     </div>
     <el-table
       v-loading="listLoading"
-      :data="brandList"
+      :data="goodsDateList"
       element-loading-text="Loading"
       border
       fit
@@ -51,14 +52,40 @@
           <span>{{ scope.row.brandId }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="品牌名" align="center">
+      <el-table-column label="商品编号" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.brandName }}</span>
+          <span>{{ scope.row.goodsNbr }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="深度" align="center">
+      <el-table-column label="商品名称" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.deep }}</span>
+          <span>{{ scope.row.goodsName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="累计小时" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.dataHourExp }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="线上/线下" align="center">
+        <template slot-scope="scope">
+          <span v-if="scope.row.modeId === 10">线下</span>
+          <span v-if="scope.row.modeId === 20">线上</span>
+        </template>
+      </el-table-column>
+      <el-table-column fixed label="日期" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.dataDate }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="销售数量" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.saleVolumes }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="销售金额" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.saleAmount }}</span>
         </template>
       </el-table-column>
       <el-table-column label="添加时间" align="center">
@@ -71,26 +98,13 @@
           {{ scope.row.updated }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center">
+      <el-table-column label="操作" fixed="right" align="center">
         <template slot-scope="scope">
-          <el-popconfirm
-            title="确定删除这条数据吗"
-            @onConfirm="deleteBrand(scope.row.brandId)"
-          >
-            <el-button
-              slot="reference"
-              type="danger"
-              size="mini"
-              round
-              style="margin-right: 10px"
-              >删除</el-button
-            >
-          </el-popconfirm>
           <el-button
             size="mini"
             type="warning"
             round
-            @click="updateBrand(scope.row)"
+            @click="openDialog(scope.row)"
             >修改</el-button
           >
         </template>
@@ -106,32 +120,36 @@
     </el-pagination>
     <el-dialog
       width="30%"
-      title="操作板块品牌信息"
+      title="修改商品日销售数据信息"
       :visible.sync="dialogFormVisible"
     >
       <el-form :model="form" style="width: ">
-        <el-form-item label="品牌ID">
-          <el-input v-model="form.brandId" autocomplete="off"></el-input>
+        <el-card class="box-card" style="color: gray">
+          <div>品牌ID：{{ form.brandId }}</div>
+          <br />
+          <div>商品编号：{{ form.goodsNbr }}</div>
+          <br />
+          <div>记录日期：{{ form.dataDate }}</div>
+          <br />
+          <div>累计小时：{{ form.dataHour }}</div>
+          <br />
+        </el-card>
+        <el-form-item label="销售数量" align="center">
+          <el-input v-model="form.saleVolumes" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="品牌名称" align="center">
-          <el-input v-model="form.brandName" autocomplete="off"></el-input>
+        <el-form-item label="销售金额" align="center">
+          <el-input v-model="form.saleAmount" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="深度">
-          <el-select v-model="form.deep" placeholder="请选择">
-            <el-option :label="1" :value="1"> </el-option>
-            <el-option :label="2" :value="2"> </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="板块" v-if="form.deep == 2">
-          <el-select v-model="form.parentId" placeholder="请选择">
-            <el-option label="家纺" :value="10"> </el-option>
-            <el-option label="服饰" :value="20"> </el-option>
+        <el-form-item label="渠道">
+          <el-select v-model="form.modeId" placeholder="请选择">
+            <el-option label="线下" :value="10"> </el-option>
+            <el-option label="线上" :value="20"> </el-option>
           </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button size="mini" @click="cancelBtn()">取 消</el-button>
-        <el-button size="mini" type="primary" @click="addBrand()"
+        <el-button size="mini" type="primary" @click="updateGoodsHourHexp()"
           >确 定</el-button
         >
       </div>
@@ -144,7 +162,7 @@
 }
 </style>
 <script>
-import brand from "@/api/brand/brand.js";
+import goodsDate from "@/api/update/goodsSaleDateHexp.js";
 export default {
   filters: {
     statusFilter(status) {
@@ -166,23 +184,22 @@ export default {
         page: 1,
         pageSize: 10,
         query: "",
+        date: "",
       },
       total: 100,
-      form: {
-        brandId: "",
-        brandName: "",
-        deep: "",
+      form: {},
+      goodsDateList: [],
+      goodsSaleDate: {
         id: "",
-        parentId: "",
-      },
-      brandList: [],
-      brand: {
+        brandId: "",
+        modeId: "",
+        goodsNbr: "",
+        goodsName: "",
+        saleVolumes: "",
+        saleAmount: "",
+        dataDate: "",
+        dataHourExp: "",
         added: "",
-        brandId: "",
-        brandName: "",
-        deep: "",
-        id: "",
-        parentId: "",
         updated: "",
       },
     };
@@ -205,28 +222,8 @@ export default {
     },
     resetData() {
       this.pagination.query = "";
+      this.pagination.date = "";
       this.fetchData();
-    },
-    updateBrand(data) {
-      this.form = data;
-      this.dialogFormVisible = true;
-    },
-    async deleteBrand(id) {
-      this.visible = false;
-      await brand.deleteBrandInfoById(id).then((resp) => {
-        if (resp.code === 200) {
-          this.$message({
-            message: "删除成功",
-            type: "success",
-          });
-          this.fetchData();
-        } else {
-          this.$message({
-            message: "删除失败",
-            type: "error",
-          });
-        }
-      });
     },
     currentChange(newpahe) {
       this.pagination.page = newpahe;
@@ -240,50 +237,33 @@ export default {
       this.pagination.page--;
       this.fetchData();
     },
-    updateProvince(data) {
+    openDialog(data) {
       this.form = data;
       this.dialogFormVisible = true;
     },
-    async addBrand() {
-      // 判断是否有id，有id则修改无则添加
-      if (this.form.id === "") {
-        if (this.form.deep === 1) {
-          this.form.parentId = 0;
-        }
-        await brand.addBrandInfo(this.form).then((resp) => {
-          if (resp.code === 200) {
-            this.$message({
-              message: "添加板块品牌信息成功",
-              type: "success",
-            });
-            this.dialogFormVisible = false;
-            this.form = {};
-            this.fetchData();
-          }
-        });
-      } else {
-        if (this.form.deep === 1) {
-          this.form.parentId = 0;
-        }
-        await brand.updateBrandInfo(this.form).then((resp) => {
-          if (resp === 200) {
-            this.$message({
-              message: "修改板块品牌信息成功",
-              type: "success",
-            });
-          }
+    async updateGoodsHourHexp() {
+      await goodsDate.GoodsSaleDateHexp(this.form).then((resp) => {
+        if (resp.code === 200) {
+          this.$message({
+            message: "修改成功",
+            type: "success",
+          });
           this.dialogFormVisible = false;
-          this.form = {};
           this.fetchData();
-        });
-      }
+        } else {
+          this.$message({
+            message: "修改失败",
+            type: "error",
+          });
+        }
+      });
     },
     async fetchData() {
       this.listLoading = true;
       console.log(this.pagination);
-      await brand.getBrandInfoPage(this.pagination).then((resp) => {
+      await goodsDate.getGoodsSaleDateHexpList(this.pagination).then((resp) => {
         if (resp.code === 200) {
-          this.brandList = resp.data.records;
+          this.goodsDateList = resp.data.records;
           this.total = resp.data.total;
         } else {
           this.$message({

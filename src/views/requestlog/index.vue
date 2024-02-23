@@ -179,7 +179,8 @@ export default {
       console.log(file, fileList);
     },
     resetData() {
-      this.searchObj = "";
+      this.pagination.query = "";
+      this.fetchData();
     },
     onCopy() {
       this.$message({

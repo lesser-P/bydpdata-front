@@ -7,7 +7,7 @@ export default {
     return request({
       url: `${api_name}/LogisticsDateSend`,
       method: "post",
-      data: date,
+      data: data,
     });
   },
   getLogisticsDateSendList(data) {

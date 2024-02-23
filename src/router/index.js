@@ -42,22 +42,8 @@ export const constantRoutes = [
     component: () => import("@/views/404"),
     hidden: true,
   },
-
   {
     path: "/",
-    component: Layout,
-    redirect: "/dashboard",
-    children: [
-      {
-        path: "dashboard",
-        name: "Dashboard",
-        component: () => import("@/views/dashboard/index"),
-        meta: { title: "Dashboard", icon: "dashboard" },
-      },
-    ],
-  },
-  {
-    path: "/user",
     component: Layout,
     children: [
       {
@@ -119,6 +105,12 @@ export const constantRoutes = [
         component: () => import("@/views/updatedata/logisticsHourSend/index"),
         meta: { title: "物流中心小时发货" },
       },
+      {
+        path: "shopDateSale",
+        name: "ShopDateSale",
+        component: () => import("@/views/updatedata/shopDateSale/index"),
+        meta: { title: "店铺销售数据" },
+      },
     ],
   },
   {
@@ -133,7 +125,18 @@ export const constantRoutes = [
       },
     ],
   },
-
+  {
+    path: "/groupSale",
+    component: Layout,
+    children: [
+      {
+        path: "manager",
+        name: "GroupSale",
+        component: () => import("@/views/groupSale/index"),
+        meta: { title: "集团销售趋势管理", icon: "form" },
+      },
+    ],
+  },
   {
     path: "/shopInfo",
     component: Layout,

@@ -1,6 +1,32 @@
 <template>
   <div class="app-container">
-    <search></search>
+    <div class="search-div">
+      <el-form label-width="70px" size="small">
+        <el-row>
+          <el-col :span="8">
+            <el-form-item label="关 键 字">
+              <el-input
+                style="width: 95%"
+                v-model="pagination.query"
+                placeholder="省份名称"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-button
+              type="primary"
+              icon="el-icon-search"
+              size="mini"
+              @click="fetchData()"
+              >搜索</el-button
+            >
+            <el-button icon="el-icon-refresh" size="mini" @click="resetData"
+              >重置</el-button
+            >
+          </el-col>
+        </el-row>
+      </el-form>
+    </div>
     <div class="tool" style="margin-bottom: 20px">
       <el-form label-width="70px" size="small">
         <el-row>
@@ -147,6 +173,7 @@ export default {
       pagination: {
         page: 1,
         pageSize: 10,
+        query: "",
       },
       total: 100,
       form: {
@@ -216,6 +243,10 @@ export default {
     updateProvince(data) {
       this.form = data;
       this.dialogFormVisible = true;
+    },
+    resetData() {
+      this.pagination.query = "";
+      this.fetchData();
     },
     addProvince() {
       // 判断是否有id，有id则修改无则添加

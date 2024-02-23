@@ -8,7 +8,7 @@
               <el-input
                 style="width: 95%"
                 v-model="pagination.query"
-                placeholder="板块/品牌 名称"
+                placeholder="物流中心ID/品牌ID/编号"
               ></el-input>
             </el-form-item>
           </el-col>
@@ -25,40 +25,66 @@
             >
           </el-col>
         </el-row>
-      </el-form>
-    </div>
-    <div class="tool" style="margin-bottom: 20px">
-      <el-form label-width="70px" size="small">
         <el-row>
-          <el-col :span="8">
-            <el-button size="mini" type="primary" @click="openDia()"
-              >+添加板块品牌信息</el-button
-            >
-          </el-col>
+          <el-form-item label="日期">
+            <el-col :span="10">
+              <el-date-picker
+                v-model="pagination.date"
+                type="date"
+                placeholder="选择日期"
+              >
+              </el-date-picker>
+            </el-col>
+          </el-form-item>
         </el-row>
       </el-form>
     </div>
     <el-table
       v-loading="listLoading"
-      :data="brandList"
+      :data="logisticsDateList"
       element-loading-text="Loading"
       border
       fit
       highlight-current-row
     >
+      <el-table-column label="编号" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.brandSendId }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="物流中心ID" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.logisticsId }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="品牌ID" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.brandId }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="品牌名" align="center">
+      <el-table-column label="日期" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.brandName }}</span>
+          <span>{{ scope.row.dataDate }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="深度" align="center">
+      <el-table-column label="发送订单数" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.deep }}</span>
+          <span>{{ scope.row.sendedOrders }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="未发送订单数" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.unsendedOrders }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="接收订单数" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.receivedOrders }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="发送小时数" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.sendedHour }}</span>
         </template>
       </el-table-column>
       <el-table-column label="添加时间" align="center">
@@ -73,24 +99,11 @@
       </el-table-column>
       <el-table-column label="操作" align="center">
         <template slot-scope="scope">
-          <el-popconfirm
-            title="确定删除这条数据吗"
-            @onConfirm="deleteBrand(scope.row.brandId)"
-          >
-            <el-button
-              slot="reference"
-              type="danger"
-              size="mini"
-              round
-              style="margin-right: 10px"
-              >删除</el-button
-            >
-          </el-popconfirm>
           <el-button
             size="mini"
             type="warning"
             round
-            @click="updateBrand(scope.row)"
+            @click="openDialog(scope.row)"
             >修改</el-button
           >
         </template>
@@ -106,32 +119,35 @@
     </el-pagination>
     <el-dialog
       width="30%"
-      title="操作板块品牌信息"
+      title="修改物流中心日发货数据"
       :visible.sync="dialogFormVisible"
     >
       <el-form :model="form" style="width: ">
-        <el-form-item label="品牌ID">
+        <el-card class="box-card" style="color: gray">
+          <div>编号：{{ form.brandSendId }}</div>
+          <br />
+          <div>物流中心ID：{{ form.logisticsId }}</div>
+          <br />
+          <div>品牌ID：{{ form.brandId }}</div>
+          <br />
+          <div>日期：{{ form.dataDate }}</div>
+          <br />
+          <div>发送小时 ：{{ form.sendedHour }}</div>
+          <br />
+        </el-card>
+        <el-form-item label="发送订单数">
           <el-input v-model="form.brandId" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="品牌名称" align="center">
-          <el-input v-model="form.brandName" autocomplete="off"></el-input>
+        <el-form-item label="未发送订单数" align="center">
+          <el-input v-model="form.unsendedOrders" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="深度">
-          <el-select v-model="form.deep" placeholder="请选择">
-            <el-option :label="1" :value="1"> </el-option>
-            <el-option :label="2" :value="2"> </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="板块" v-if="form.deep == 2">
-          <el-select v-model="form.parentId" placeholder="请选择">
-            <el-option label="家纺" :value="10"> </el-option>
-            <el-option label="服饰" :value="20"> </el-option>
-          </el-select>
+        <el-form-item label="接收订单数">
+          <el-input v-model="form.receivedOrders" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button size="mini" @click="cancelBtn()">取 消</el-button>
-        <el-button size="mini" type="primary" @click="addBrand()"
+        <el-button size="mini" type="primary" @click="updateInfo"
           >确 定</el-button
         >
       </div>
@@ -144,7 +160,7 @@
 }
 </style>
 <script>
-import brand from "@/api/brand/brand.js";
+import logisticDate from "@/api/update/logisticsDateSend";
 export default {
   filters: {
     statusFilter(status) {
@@ -168,21 +184,19 @@ export default {
         query: "",
       },
       total: 100,
-      form: {
-        brandId: "",
-        brandName: "",
-        deep: "",
+      form: {},
+      logisticsDateList: [],
+      logisticDateSend: {
         id: "",
-        parentId: "",
-      },
-      brandList: [],
-      brand: {
+        brandSendId: "",
+        logisticsId: "",
+        brandId: "",
+        sendedOrders: "",
+        unsendedOrders: "",
+        receivedOrders: "",
+        sendedHour: "",
+        dataDate: "",
         added: "",
-        brandId: "",
-        brandName: "",
-        deep: "",
-        id: "",
-        parentId: "",
         updated: "",
       },
     };
@@ -205,15 +219,16 @@ export default {
     },
     resetData() {
       this.pagination.query = "";
+      this.pagination.date = "";
       this.fetchData();
     },
     updateBrand(data) {
       this.form = data;
       this.dialogFormVisible = true;
     },
-    async deleteBrand(id) {
+    async deleteInfo(id) {
       this.visible = false;
-      await brand.deleteBrandInfoById(id).then((resp) => {
+      await this.logisticDate.deleteInfo(id).then((resp) => {
         if (resp.code === 200) {
           this.$message({
             message: "删除成功",
@@ -236,62 +251,47 @@ export default {
       this.pagination.page++;
       this.fetchData();
     },
+    openDialog(data) {
+      this.form = data;
+      this.dialogFormVisible = true;
+    },
     prevPage() {
       this.pagination.page--;
       this.fetchData();
     },
-    updateProvince(data) {
-      this.form = data;
-      this.dialogFormVisible = true;
-    },
-    async addBrand() {
-      // 判断是否有id，有id则修改无则添加
-      if (this.form.id === "") {
-        if (this.form.deep === 1) {
-          this.form.parentId = 0;
-        }
-        await brand.addBrandInfo(this.form).then((resp) => {
-          if (resp.code === 200) {
-            this.$message({
-              message: "添加板块品牌信息成功",
-              type: "success",
-            });
-            this.dialogFormVisible = false;
-            this.form = {};
-            this.fetchData();
-          }
-        });
-      } else {
-        if (this.form.deep === 1) {
-          this.form.parentId = 0;
-        }
-        await brand.updateBrandInfo(this.form).then((resp) => {
-          if (resp === 200) {
-            this.$message({
-              message: "修改板块品牌信息成功",
-              type: "success",
-            });
-          }
-          this.dialogFormVisible = false;
-          this.form = {};
-          this.fetchData();
-        });
-      }
-    },
-    async fetchData() {
-      this.listLoading = true;
-      console.log(this.pagination);
-      await brand.getBrandInfoPage(this.pagination).then((resp) => {
+    async updateInfo() {
+      await logisticDate.LogisticsDateSend(this.form).then((resp) => {
         if (resp.code === 200) {
-          this.brandList = resp.data.records;
-          this.total = resp.data.total;
+          this.$message({
+            message: "修改成功",
+            type: "success",
+          });
+          this.dialogFormVisible = false;
+          this.fetchData();
         } else {
           this.$message({
-            message: "请求失败",
+            message: "修改失败",
             type: "error",
           });
         }
       });
+    },
+    async fetchData() {
+      this.listLoading = true;
+      console.log(this.pagination);
+      await logisticDate
+        .getLogisticsDateSendList(this.pagination)
+        .then((resp) => {
+          if (resp.code === 200) {
+            this.logisticsDateList = resp.data.records;
+            this.total = resp.data.total;
+          } else {
+            this.$message({
+              message: "请求失败",
+              type: "error",
+            });
+          }
+        });
       this.listLoading = false;
     },
   },
