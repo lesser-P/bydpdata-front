@@ -104,7 +104,7 @@ export default {
       common.login(this.loginForm).then((res) => {
         if (res.code === 200) {
           this.$store.dispatch("user/login", this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || "/" });
+            this.$router.push({ path: this.redirect || "/user/manager" });
           });
         } else {
           this.$message.error(res.message);
