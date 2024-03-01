@@ -49,7 +49,7 @@
       fit
       highlight-current-row
     >
-      <el-table-column label="渠道ID">
+      <el-table-column align="center" label="渠道ID">
         <template slot-scope="scope">
           {{ scope.row.channelId }}
         </template>
@@ -67,16 +67,6 @@
       <el-table-column label="渠道父级ID" align="center">
         <template slot-scope="scope">
           {{ scope.row.parentId }}
-        </template>
-      </el-table-column>
-      <el-table-column label="添加时间" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.added }}
-        </template>
-      </el-table-column>
-      <el-table-column label="修改时间" width="110" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.updated }}
         </template>
       </el-table-column>
       <el-table-column label="操作" width="200" align="center">

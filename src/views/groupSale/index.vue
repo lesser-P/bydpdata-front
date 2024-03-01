@@ -69,16 +69,6 @@
           <span>{{ scope.row.saleAmount }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="添加时间" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.added }}
-        </template>
-      </el-table-column>
-      <el-table-column label="修改时间" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.updated }}
-        </template>
-      </el-table-column>
       <el-table-column label="操作" align="center">
         <template slot-scope="scope">
           <el-popconfirm

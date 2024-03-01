@@ -35,88 +35,91 @@
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="空间ID">
+      <el-table-column align="center" type="expand">
         <template slot-scope="scope">
-          {{ scope.row.parkId }}
+          <el-table :data="scope.row.teamList">
+            <el-table-column label="空间ID" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.parkId }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="团队名称" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.teamName }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="入驻时间" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.date }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="是否在园区" align="center">
+              <template slot-scope="scope">
+                {{ scope.row.settleState === true ? "在园区" : "不在园区" }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" align="center">
+              <template slot-scope="scope">
+                <el-popconfirm
+                  title="确定删除这条数据吗"
+                  @onConfirm="deleteTeam(scope.row.id)"
+                >
+                  <el-button
+                    slot="reference"
+                    type="danger"
+                    size="mini"
+                    round
+                    style="margin-right: 10px"
+                    >删除</el-button
+                  >
+                </el-popconfirm>
+                <el-button
+                  size="mini"
+                  type="warning"
+                  round
+                  @click="updateTeam(scope.row)"
+                  >修改</el-button
+                >
+              </template>
+            </el-table-column>
+          </el-table>
         </template>
       </el-table-column>
-      <el-table-column label="团队名称" align="center">
+      <el-table-column label="空间名称" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.teamName }}</span>
+          <span>{{ scope.row.parkName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="入驻时间" align="center">
+      <el-table-column label="空间副名称" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.settleDate }}</span>
+          <span>{{ scope.row.parkNameSub }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="是否在园区" align="center">
+      <el-table-column label="入住团队数量" align="center">
         <template slot-scope="scope">
-          {{ scope.row.settleState === true ? "在园区" : "不在园区" }}
-        </template>
-      </el-table-column>
-      <el-table-column label="添加时间" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.added }}
-        </template>
-      </el-table-column>
-      <el-table-column label="修改时间" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.updated }}
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center">
-        <template slot-scope="scope">
-          <el-popconfirm
-            title="确定删除这条数据吗"
-            @onConfirm="deleteTeam(scope.row.id)"
-          >
-            <el-button
-              slot="reference"
-              type="danger"
-              size="mini"
-              round
-              style="margin-right: 10px"
-              >删除</el-button
-            >
-          </el-popconfirm>
-          <el-button
-            size="mini"
-            type="warning"
-            round
-            @click="updateTeam(scope.row)"
-            >修改</el-button
-          >
+          <span>{{ scope.row.settleTeam }}</span>
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination
-      @current-change="handleCurrentChange"
-      :current-page.sync="this.pagination.page"
-      :page-size="this.pagination.pageSize"
-      layout="total, prev, pager, next"
-      :total="this.total"
-    >
-    </el-pagination>
     <el-dialog
       width="30%"
       title="修改团队信息"
       :visible.sync="dialogFormVisibleTeam"
     >
-      <el-form :model="team" style="width: ">
+      <el-form :model="form" style="width: ">
         <el-form-item label="团队名称" align="center">
-          <el-input v-model="team.teamName" autocomplete="off"></el-input>
+          <el-input v-model="form.teamName" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="入住日期">
           <el-date-picker
-            v-model="team.settleDate"
+            v-model="form.settleDate"
             type="date"
             placeholder="选择日期"
           >
           </el-date-picker>
           <el-switch
             style="margin-left: 10px"
-            v-model="team.settleState"
+            v-model="form.settleState"
             active-text="在园区"
             inactive-text="不在园区"
           >
@@ -132,21 +135,15 @@
           "
           >取 消</el-button
         >
-        <el-button size="mini" type="primary" @click="update(data)"
-          >确定</el-button
-        >
+        <el-button size="mini" type="primary" @click="update()">确定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import Search from "@/components/Search/index.vue";
 import parkspace from "@/api/park/park.js";
 export default {
-  components: {
-    Search,
-  },
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -160,12 +157,11 @@ export default {
   data() {
     return {
       dialogFormVisibleTeam: false,
+      form: {},
       team: {},
       teamList: [],
       total: 100,
       pagination: {
-        page: "1",
-        pageSize: "10",
         query: "",
       },
     };
@@ -208,12 +204,11 @@ export default {
       this.fetchData();
     },
     updateTeam(data) {
-      this.team = data;
+      this.form = data;
       this.dialogFormVisibleTeam = true;
     },
     async update() {
-      this.team.settleState = this.open ? 1 : 0;
-      await parkspace.updateTeamInfo(this.team).then((resp) => {
+      await parkspace.updateTeamInfo(this.form).then((resp) => {
         if (resp.code === 200) {
           this.$message({
             message: "修改成功",
@@ -233,8 +228,7 @@ export default {
       this.listLoading = true;
       await parkspace.getTeamPage(this.pagination).then((resp) => {
         if (resp.code === 200) {
-          this.teamList = resp.data.records;
-          this.total = resp.data.total;
+          this.teamList = resp.data;
         } else {
           this.$message({
             message: "请求失败",

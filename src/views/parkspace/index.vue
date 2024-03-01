@@ -35,8 +35,8 @@
               size="mini"
               type="primary"
               @click="
+                form = { id: '' };
                 dialogFormVisible = true;
-                this.form = {};
               "
               >+添加运营空间信息</el-button
             >
@@ -52,14 +52,19 @@
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="空间ID">
+      <el-table-column label="空间编号" align="center">
         <template slot-scope="scope">
-          {{ scope.row.parkId }}
+          <span>{{ scope.row.parkNameNumber }}</span>
         </template>
       </el-table-column>
       <el-table-column label="空间名称" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.parkName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="空间原名称" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.parkOldName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="空间副名称" align="center">
@@ -94,16 +99,6 @@
       <el-table-column label="是否开放" align="center">
         <template slot-scope="scope">
           {{ scope.row.parkOpen === true ? "开放" : "关闭" }}
-        </template>
-      </el-table-column>
-      <el-table-column label="添加时间" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.added }}
-        </template>
-      </el-table-column>
-      <el-table-column label="修改时间" width="110" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.updated }}
         </template>
       </el-table-column>
       <el-table-column label="操作" width="300" align="center">
@@ -150,12 +145,12 @@
     <!-- 添加运营空间 弹窗 -->
     <el-dialog
       width="30%"
-      title="新增运营空间信息"
+      title="操作运营空间信息"
       :visible.sync="dialogFormVisible"
     >
       <el-form :model="form" style="width: ">
-        <el-form-item label="运营空间ID" align="center">
-          <el-input v-model="form.parkId" autocomplete="off"></el-input>
+        <el-form-item label="运营空间编号" align="center">
+          <el-input v-model="form.parkNameNumber" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="运营空间名称">
           <el-input v-model="form.parkName" autocomplete="off"></el-input>
@@ -228,7 +223,7 @@
           </el-date-picker>
           <el-switch
             style="margin-left: 10px"
-            v-model="open"
+            v-model="team.settleState"
             active-text="在园区"
             inactive-text="不在园区"
           >
@@ -267,13 +262,13 @@ export default {
   },
   data() {
     return {
+      open: true,
       team: {
         parkId: "",
         settleDate: "",
-        settleState: open,
+        settleState: true,
         teamName: "",
       },
-      open: true,
       fileList: [],
       visible: false,
       dialogFormVisible: false,
@@ -293,6 +288,8 @@ export default {
         parkId: "",
         parkImg: "",
         parkName: "",
+        parkOldName: "",
+        parkNameNumber: "",
         parkNameSub: "",
         parkOpen: "",
         settleTeams: "",
@@ -350,6 +347,30 @@ export default {
     updateParkspace(data) {
       this.form = data;
       this.dialogFormVisible = true;
+    },
+    addTeam() {
+      parkspace.addTeam(this.team).then((resp) => {
+        if (resp.code === 200) {
+          this.$message({
+            message: "添加团队信息成功",
+            type: "success",
+          });
+          this.dialogFormVisibleTeam = false;
+          this.team = {};
+          this.fetchData();
+        }
+      });
+    },
+    deleteParkspace(id) {
+      parkspace.deleteParkSpaceInfo(id).then((resp) => {
+        if (resp.code === 200) {
+          this.$message({
+            message: "删除运营空间信息成功",
+            type: "success",
+          });
+          this.fetchData();
+        }
+      });
     },
     async addParkSpace() {
       // 判断是否有id，有id则修改无则添加

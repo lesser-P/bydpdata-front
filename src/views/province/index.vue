@@ -49,7 +49,7 @@
       fit
       highlight-current-row
     >
-      <el-table-column label="省份ID">
+      <el-table-column align="center" label="省份ID">
         <template slot-scope="scope">
           {{ scope.row.provinceId }}
         </template>
@@ -62,16 +62,6 @@
       <el-table-column label="省份全名" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.provinceNameFull }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="添加时间" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.added }}
-        </template>
-      </el-table-column>
-      <el-table-column label="修改时间" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.updated }}
         </template>
       </el-table-column>
       <el-table-column label="操作" width="200" align="center">

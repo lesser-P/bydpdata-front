@@ -49,16 +49,6 @@
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="ID" width="95">
-        <template slot-scope="scope">
-          {{ scope.$index }}
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="ID">
-        <template slot-scope="scope">
-          {{ scope.row.id }}
-        </template>
-      </el-table-column>
       <el-table-column align="center" label="物流中心ID">
         <template slot-scope="scope">
           {{ scope.row.logisticsId }}
@@ -67,16 +57,6 @@
       <el-table-column label="物流中心名称" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.logisticsName }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="创建时间" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.added }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="修改时间" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.updated }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="200" align="center">
