@@ -121,7 +121,7 @@
           <br />
           <div>记录日期：{{ form.dataDate }}</div>
           <br />
-          <div>累计小时：{{ form.dataHour }}</div>
+          <div>累计小时：{{ form.dataHourExp }}</div>
           <br />
         </el-card>
         <el-form-item label="销售数量" align="center">
