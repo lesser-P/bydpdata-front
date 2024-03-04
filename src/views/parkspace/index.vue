@@ -87,15 +87,6 @@
           <span>{{ scope.row.settleTeams }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="空间图片" align="center">
-        <template slot-scope="scope">
-          <el-image
-            style="width: 100px; height: 100px"
-            :src="scope.row.parkImg"
-            :fit="fit"
-          ></el-image>
-        </template>
-      </el-table-column>
       <el-table-column label="是否开放" align="center">
         <template slot-scope="scope">
           {{ scope.row.parkOpen === true ? "开放" : "关闭" }}
@@ -103,6 +94,14 @@
       </el-table-column>
       <el-table-column label="操作" width="300" align="center">
         <template slot-scope="scope">
+          <el-button
+            type="success"
+            size="mini"
+            style="margin-right: 10px"
+            round
+            @click="openImage(scope.row.parkImg)"
+            >预览</el-button
+          >
           <el-popconfirm
             title="确定删除这条数据吗"
             @onConfirm="deleteParkspace(scope.row.id)"
@@ -150,7 +149,13 @@
     >
       <el-form :model="form" style="width: ">
         <el-form-item label="运营空间编号" align="center">
-          <el-input v-model="form.parkNameNumber" autocomplete="off"></el-input>
+          <el-input v-model="form.parkNameNumber" autocomplete="off">
+            <template slot="append">
+              <el-button @click="getParkSpaceInfoByNumber()"
+                >拉取信息</el-button
+              >
+            </template>
+          </el-input>
         </el-form-item>
         <el-form-item label="运营空间名称">
           <el-input v-model="form.parkName" autocomplete="off"></el-input>
@@ -180,7 +185,6 @@
             :on-preview="handlePreview"
             :on-remove="handleRemove"
             :on-success="handleSuccess"
-            :file-list="fileList"
             :auto-upload="false"
           >
             <el-button slot="trigger" size="small" type="primary"
@@ -194,6 +198,12 @@
               >上传到服务器</el-button
             ><br />
           </el-upload>
+          <el-image
+            :key="imageKey"
+            style="max-width: 100%; height: auto"
+            :src="this.form.parkImg"
+            :fit="contain"
+          ></el-image>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -244,6 +254,15 @@
         >
       </div>
     </el-dialog>
+
+    <el-dialog width="30%" :visible.sync="imageDialog">
+      <div style="text-align: center">
+        <el-image
+          style="max-width: 500px; height: auto; margin: 0 auto"
+          :src="this.imageUrl"
+        ></el-image>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -269,6 +288,7 @@ export default {
         settleState: true,
         teamName: "",
       },
+      imageDialog: false,
       fileList: [],
       visible: false,
       dialogFormVisible: false,
@@ -281,6 +301,7 @@ export default {
         query: "",
       },
       total: 100,
+      imageUrl: "",
       form: {
         areaBuss: "",
         areaTotal: "",
@@ -292,8 +313,9 @@ export default {
         parkNameNumber: "",
         parkNameSub: "",
         parkOpen: "",
-        settleTeams: "",
+        settleTeams: 0,
       },
+      imageKey: 0,
       parkspaceList: [],
       parkspace: {
         added: "",
@@ -309,6 +331,16 @@ export default {
         updated: "",
       },
     };
+  },
+  computed: {
+    isParkOpen: {
+      get() {
+        return this.form.parkOpen === 1;
+      },
+      set(value) {
+        this.form.parkOpen = value ? 1 : 0;
+      },
+    },
   },
   created() {
     this.fetchData();
@@ -333,6 +365,7 @@ export default {
     },
     handleSuccess(res, file) {
       this.form.parkImg = res.data;
+      this.imageKey++;
     },
     // 上传图片
     submitUpload() {
@@ -372,11 +405,28 @@ export default {
         }
       });
     },
+    openImage(url) {
+      this.imageUrl = url;
+      this.imageDialog = true;
+    },
+    getParkSpaceInfoByNumber() {
+      parkspace
+        .getOtherBaseParkSpaceInfo(this.form.parkNameNumber)
+        .then((resp) => {
+          if (resp.code === 200) {
+            this.form = resp.data;
+            if (this.form.parkOpen === 1) {
+              this.form.parkOpen = true;
+            } else {
+              this.form.parkOpen = false;
+            }
+            this.form.id = "";
+          }
+        });
+    },
     async addParkSpace() {
       // 判断是否有id，有id则修改无则添加
       if (this.form.id === "") {
-        this.form.parkOpen = this.open;
-        this.form.settleTeams = 0;
         await parkspace.addParkSpaceInfo(this.form).then((resp) => {
           this.form = {};
           if (resp.code === 200) {

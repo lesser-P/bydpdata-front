@@ -63,4 +63,10 @@ export default {
       data: data,
     });
   },
+  getOtherBaseParkSpaceInfo(parkNumber) {
+    return request({
+      url: `${api_name}/getOtherBaseParkSpaceInfoByNum?parkNumber=${parkNumber}`,
+      method: "get",
+    });
+  },
 };
