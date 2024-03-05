@@ -92,7 +92,7 @@
           {{ scope.row.parkOpen === true ? "开放" : "关闭" }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="400" align="center">
+      <el-table-column label="操作" width="300" align="center">
         <template slot-scope="scope">
           <el-button
             type="success"
@@ -121,13 +121,6 @@
             round
             @click="updateParkspace(scope.row)"
             >修改</el-button
-          >
-          <el-button
-            size="mini"
-            type="primary"
-            round
-            @click="openAddTeam(scope.row.parkId)"
-            >添加团队</el-button
           >
         </template>
       </el-table-column>
@@ -346,10 +339,6 @@ export default {
     this.fetchData();
   },
   methods: {
-    openAddTeam(id) {
-      this.dialogFormVisibleTeam = true;
-      this.team.parkId = id;
-    },
     resetData() {
       this.pagination.query = "";
       this.fetchData();
@@ -380,19 +369,6 @@ export default {
     updateParkspace(data) {
       this.form = data;
       this.dialogFormVisible = true;
-    },
-    addTeam() {
-      parkspace.addTeam(this.team).then((resp) => {
-        if (resp.code === 200) {
-          this.$message({
-            message: "添加团队信息成功",
-            type: "success",
-          });
-          this.dialogFormVisibleTeam = false;
-          this.team = {};
-          this.fetchData();
-        }
-      });
     },
     deleteParkspace(id) {
       parkspace.deleteParkSpaceInfo(id).then((resp) => {
