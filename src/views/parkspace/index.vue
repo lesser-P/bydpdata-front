@@ -92,7 +92,7 @@
           {{ scope.row.parkOpen === true ? "开放" : "关闭" }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="300" align="center">
+      <el-table-column label="操作" width="400" align="center">
         <template slot-scope="scope">
           <el-button
             type="success"
@@ -100,7 +100,7 @@
             style="margin-right: 10px"
             round
             @click="openImage(scope.row.parkImg)"
-            >预览</el-button
+            >预览图片</el-button
           >
           <el-popconfirm
             title="确定删除这条数据吗"

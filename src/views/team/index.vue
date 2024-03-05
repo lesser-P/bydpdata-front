@@ -10,6 +10,11 @@
                 v-model="pagination.query"
                 placeholder="团队名称"
               ></el-input>
+              <el-input
+                style="width: 95%; margin-top: 10px"
+                v-model="pagination.back"
+                placeholder="空间名称"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -55,7 +60,7 @@
           {{ scope.row.settleState === true ? "在园区" : "不在园区" }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center">
+      <el-table-column label="操作" w align="center">
         <template slot-scope="scope">
           <el-popconfirm
             title="确定删除这条数据吗"
@@ -184,6 +189,7 @@ export default {
     },
     resetData() {
       this.pagination.query = "";
+      this.pagination.back = "";
       this.fetchData();
     },
     currentChange(newpage) {
